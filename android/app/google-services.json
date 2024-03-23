@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "272389882760",
+    "project_id": "fizzlechat-5eb5a",
+    "storage_bucket": "fizzlechat-5eb5a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:272389882760:android:dce417c7466dc3a586b03d",
+        "android_client_info": {
+          "package_name": "com.example.fizzle"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhA7tT2URhCWxEmMe8pv_sNwh2SrcmpNo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
