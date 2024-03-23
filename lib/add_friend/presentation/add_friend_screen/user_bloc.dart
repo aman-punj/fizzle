@@ -1,7 +1,6 @@
-import 'dart:async';
-import 'package:bloc/bloc.dart';
 
-import '../../../core/models/user_models.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../data/user_models.dart';
 import '../../data/user_repo.dart';
 
 enum UserEvent { fetchUsers }
