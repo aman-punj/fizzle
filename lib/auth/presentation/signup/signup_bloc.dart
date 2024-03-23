@@ -21,7 +21,7 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
         case NetworkResultType.error:
         // print(
         //     'Error: ${(result as Error<String>).code}, ${(result as Error<String>).message}');
-          emit(SignUpSuccessState(msg: (result as Error<String>).message));
+          emit(SignUpErrorState(msg: (result as Error<String>).message));
           break;
       }
     });

@@ -67,7 +67,7 @@ dynamic sendRoute(BuildContext context, RoutesNames s,
       break;
       case RoutesNames.chatScreen:
       sendActivity(
-          context, const ChatScreen(userName: 'asd' ),
+          context, const ChatScreen(userName: 'asd' , id: ' ' ),
           );
       break;
 

@@ -1,5 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fizzle/user_chat/modal/chat_rapo.dart';
+import 'package:fizzle/user_chat/presentation/chat_bloc.dart';
 import 'package:fizzle/user_chat/presentation/chat_screen.dart';
+import 'package:fizzle/user_chat/presentation/get_chat_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -63,31 +66,7 @@ class _ChatScreenState extends State<AllChatsScreen> {
         )
       ],
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            'Welcome',
-            style: TextStyle(fontSize: 18.sp, color: Colors.black),
-          ),
-          actions: [
-            InkWell(
-                onTap: () async {
-                  await FirebaseAuth.instance.signOut();
-                  pushPage();
-                },
-                child: const Icon(Icons.logout)),
-            SizedBox(
-              width: 8.w,
-            ),
-            InkWell(
-                onTap: () {
-                  sendRoute(context, RoutesNames.addFriend);
-                },
-                child: const Icon(Icons.add_comment_outlined)),
-            SizedBox(
-              width: 8.w,
-            )
-          ],
-        ),
+        appBar: buildAppBar(context),
         body: Padding(
           padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 10.h),
           child: Column(
@@ -114,10 +93,20 @@ class _ChatScreenState extends State<AllChatsScreen> {
                         title: Text(filteredItems[index].name),
                         subtitle: const Text('Last message'),
                         onTap: () {
-                          print('tapped');
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => ChatScreen(
-                                  userName: filteredItems[index].name)));
+                              builder: (context) => MultiBlocProvider(
+                                    providers: [
+                                      BlocProvider<ChatBloc>(
+                                          create: (context) =>
+                                              (ChatBloc(ChatRepository()))),
+                                      BlocProvider<GetChatBloc>(
+                                          create: (context) =>
+                                          (GetChatBloc(ChatRepository())))
+                                    ],
+                                    child: ChatScreen(
+                                        userName: filteredItems[index].name,
+                                        id: filteredItems[index].id),
+                                  )));
                         },
                       ),
                     );
@@ -128,6 +117,34 @@ class _ChatScreenState extends State<AllChatsScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  AppBar buildAppBar(BuildContext context) {
+    return AppBar(
+      title: Text(
+        'Welcome',
+        style: TextStyle(fontSize: 18.sp, color: Colors.black),
+      ),
+      actions: [
+        InkWell(
+            onTap: () async {
+              await FirebaseAuth.instance.signOut();
+              pushPage();
+            },
+            child: const Icon(Icons.logout)),
+        SizedBox(
+          width: 8.w,
+        ),
+        InkWell(
+            onTap: () {
+              sendRoute(context, RoutesNames.addFriend);
+            },
+            child: const Icon(Icons.add_comment_outlined)),
+        SizedBox(
+          width: 8.w,
+        )
+      ],
     );
   }
 

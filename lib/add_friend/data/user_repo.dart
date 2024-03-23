@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:firebase_database/firebase_database.dart';
-import '../../../core/models/user_models.dart' as USER;
+import 'user_models.dart' as USER;
 import 'package:firebase_auth/firebase_auth.dart';
 
 class UserRepository {
