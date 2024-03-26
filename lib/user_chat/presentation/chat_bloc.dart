@@ -4,7 +4,6 @@ import 'package:fizzle/user_chat/modal/chat_modal.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../modal/chat_rapo.dart';
-import 'chat_bloc.dart';
 
 abstract class ChatState {}
 
@@ -41,6 +40,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       }
     });
   }
+
+
 }
 
 abstract class ChatEvent extends Equatable {}

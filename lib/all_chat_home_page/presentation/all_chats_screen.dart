@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fizzle/core/presentation/components/custom_widgets/loader_widget.dart';
 import 'package:fizzle/user_chat/modal/chat_rapo.dart';
 import 'package:fizzle/user_chat/presentation/chat_bloc.dart';
 import 'package:fizzle/user_chat/presentation/chat_screen.dart';
+import 'package:fizzle/user_chat/presentation/delete_message_bloc.dart';
 import 'package:fizzle/user_chat/presentation/get_chat_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -23,7 +25,7 @@ class _ChatScreenState extends State<AllChatsScreen> {
 
   UserBloc? userBloc;
 
-  // User? userList;
+  bool isLoadingChats = false;
 
   var userList = [];
 
@@ -55,8 +57,13 @@ class _ChatScreenState extends State<AllChatsScreen> {
         BlocListener<UserBloc, UserState>(
           listener: (context, state) async {
             if (state is UsersErrorState) {
+            } else if (state is UsersLoadingState) {
+              setState(() {
+                isLoadingChats = true;
+              });
             } else if (state is UsersLoadedState) {
               setState(() {
+                isLoadingChats = false;
                 userList = state.users;
                 filteredItems.clear();
                 filteredItems.addAll(userList);
@@ -65,58 +72,66 @@ class _ChatScreenState extends State<AllChatsScreen> {
           },
         )
       ],
-      child: Scaffold(
-        appBar: buildAppBar(context),
-        body: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 10.h),
-          child: Column(
-            children: [
-              ChatSearchField(
-                controller: chatSearchController,
-                onChanged: (value) {
-                  filterItems(value);
-                },
-              ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: filteredItems.length,
-                  itemBuilder: (context, index) {
-                    String firstCharacter =
-                        filteredItems[index].name.substring(0, 1).toUpperCase();
-                    return Card(
-                      margin: EdgeInsets.all(4.h),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: Colors.blue,
-                          child: Text(firstCharacter),
-                        ),
-                        title: Text(filteredItems[index].name),
-                        subtitle: const Text('Last message'),
-                        onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => MultiBlocProvider(
-                                    providers: [
-                                      BlocProvider<ChatBloc>(
-                                          create: (context) =>
-                                              (ChatBloc(ChatRepository()))),
-                                      BlocProvider<GetChatBloc>(
-                                          create: (context) =>
-                                          (GetChatBloc(ChatRepository())))
-                                    ],
-                                    child: ChatScreen(
-                                        userName: filteredItems[index].name,
-                                        id: filteredItems[index].id),
-                                  )));
-                        },
-                      ),
-                    );
+      child: Stack(children: [
+        Scaffold(
+          appBar: buildAppBar(context),
+          body: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 10.h),
+            child: Column(
+              children: [
+                ChatSearchField(
+                  controller: chatSearchController,
+                  onChanged: (value) {
+                    filterItems(value);
                   },
                 ),
-              )
-            ],
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: filteredItems.length,
+                    itemBuilder: (context, index) {
+                      String firstCharacter = filteredItems[index]
+                          .name
+                          .substring(0, 1)
+                          .toUpperCase();
+                      return Card(
+                        margin: EdgeInsets.all(4.h),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.blue,
+                            child: Text(firstCharacter),
+                          ),
+                          title: Text(filteredItems[index].name),
+                          subtitle: const Text('Last message'),
+                          onTap: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => MultiBlocProvider(
+                                      providers: [
+                                        BlocProvider<ChatBloc>(
+                                            create: (context) =>
+                                                (ChatBloc(ChatRepository()))),
+                                        BlocProvider<GetChatBloc>(
+                                            create: (context) => (GetChatBloc(
+                                                ChatRepository()))),
+                                        BlocProvider<DeleteMsgBloc>(
+                                            create: (context) => (DeleteMsgBloc(
+                                                ChatRepository())))
+                                      ],
+                                      child: ChatScreen(
+                                          userName: filteredItems[index].name,
+                                          id: filteredItems[index].id),
+                                    )));
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                )
+              ],
+            ),
           ),
         ),
-      ),
+        isLoadingChats ? const LoaderWidget() : const SizedBox()
+      ]),
     );
   }
 

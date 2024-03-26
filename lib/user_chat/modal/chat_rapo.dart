@@ -9,7 +9,6 @@ import '../../auth/util/result.dart';
 
 class ChatRepository {
   FirebaseDatabase database = FirebaseDatabase.instance;
-
   final currentUser = FirebaseAuth.instance.currentUser;
 
   Stream<List<Message>> getChats({required String userId}) {
@@ -50,15 +49,40 @@ class ChatRepository {
           database.ref().child('chats/${message.userId}${currentUser?.uid}');
 
       await chatRef
-          .child(DateTime.now().millisecondsSinceEpoch.toString())
+          .child(message.time.millisecondsSinceEpoch.toString())
           .set(message.toMap());
       await toUserChat
-          .child(DateTime.now().millisecondsSinceEpoch.toString())
+          .child(message.time.millisecondsSinceEpoch.toString())
           .set(message.toMap());
 
       return Success('Message sent');
     } catch (e) {
-      return Error(message: 'Error occured');
+      return Error(message: 'Error occurred');
     }
   }
+  Future<NetworkResult<String>> deleteMessage(Message message, {bool deleteForAll = true}) async {
+    try {
+      DatabaseReference senderChatRef = database
+          .ref()
+          .child('chats/${currentUser?.uid}${message.userId}')
+          .child(message.time.millisecondsSinceEpoch.toString());
+
+      await senderChatRef.remove();
+
+      if (deleteForAll) {
+        DatabaseReference receiverChatRef = database
+            .ref()
+            .child('chats/${message.userId}${currentUser?.uid}')
+            .child(message.time.millisecondsSinceEpoch.toString());
+
+        await receiverChatRef.remove();
+      }
+
+      return Success('Message deleted');
+    } catch (e) {
+      return Error(message: 'Error occurred while deleting message');
+    }
+  }
+
+
 }
