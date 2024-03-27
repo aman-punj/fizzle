@@ -48,13 +48,6 @@ class ChatRepository {
     });
   }
 
-
-  // Future<String> _decryptMessage(
-  //     String encryptedMessage, String privateKeyPem) async {
-  //   final privateKey = RsaKeyHelper.parsePrivateKeyFromPem(privateKeyPem);
-  //   return RsaKeyHelper.decryptWithPrivateKey(encryptedMessage, privateKey);
-  // }
-
   Future<NetworkResult<String>> sendMessage(
       Message message, String receiverPublicKey) async {
     try {
