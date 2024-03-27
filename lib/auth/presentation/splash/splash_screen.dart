@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/routes/send_route.dart';
+import '../../../core/util/encryption.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -16,7 +17,11 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-
+    // final keyPairUserMe = generateRSAKeyPair();
+    // final publicKeyUserMe  = keyPairUserMe.publicKey;
+    // final privateKeyUserMe = keyPairUserMe.privateKey;
+    // print(publicKeyUserMe);
+    // print(privateKeyUserMe);
     initView();
   }
 

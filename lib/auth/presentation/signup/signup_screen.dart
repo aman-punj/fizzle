@@ -1,8 +1,10 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:pointycastle/export.dart' as pointy_castle;
 
+import '../../../core/util/encryption.dart';
 import 'signup_bloc.dart';
 import '../../../core/presentation/components/common_widgets.dart';
 import '../components/custom_button.dart';
@@ -43,6 +45,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
     passwordController.dispose();
     nameController.dispose();
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -116,7 +120,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                   CustomTextField(
                     controller: nameController,
-                    hintText: 'Your name', icon: Icons.person,
+                    hintText: 'Your name',
+                    icon: Icons.person,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Name is required';
@@ -154,10 +159,42 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  void _signUp() {
-    if (_formKey.currentState!.validate()) {
+
+  static const storage = FlutterSecureStorage();
+
+  Future<void> _generateAndStoreKeys() async {
+    // Generate RSA key pair
+    final keyPair = await RsaKeyHelper.computeRSAKeyPair();
+    final pointy_castle.RSAPublicKey publicKey =
+    keyPair.publicKey as pointy_castle.RSAPublicKey;
+    final pointy_castle.RSAPrivateKey privateKey =
+    keyPair.privateKey as pointy_castle.RSAPrivateKey;
+
+    // Convert keys to PEM format
+    final publicKeyPem = RsaKeyHelper.encodePublicKeyToPemPKCS1(publicKey);
+    final privateKeyPem = RsaKeyHelper.encodePrivateKeyToPemPKCS1(privateKey);
+
+    // Store keys securely
+    await storage.write(key: 'publicKey', value: publicKeyPem);
+    await storage.write(key: 'privateKey', value: privateKeyPem);
+
+    print('Public key: $publicKeyPem');
+    print('Private key: $privateKeyPem');
+  }
+
+  void _signUp() async {
+    await _generateAndStoreKeys();
+    String? pkey = await storage.read(key: 'publicKey');
+    print(pkey);
+    String? p2key = await storage.read(key: 'privateKey');
+    print(p2key);
+    if (_formKey.currentState!.validate() && pkey != null) {
       signUpBloc?.add(DoSignUpEvent(
-          email: emailController.text, password: passwordController.text , userName:  nameController.text));
+        email: emailController.text,
+        password: passwordController.text,
+        userName: nameController.text,
+        publicKey: pkey,
+      ));
     }
   }
 }

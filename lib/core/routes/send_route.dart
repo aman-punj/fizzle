@@ -65,11 +65,11 @@ dynamic sendRoute(BuildContext context, RoutesNames s,
           isReplace: isReplace,
           clearStack: clearStack);
       break;
-      case RoutesNames.chatScreen:
-      sendActivity(
-          context, const ChatScreen(userName: 'asd' , id: ' ' ),
-          );
-      break;
+      // case RoutesNames.chatScreen:
+      // sendActivity(
+      //     context, const ChatScreen(userName: 'asd' , id: ' ' ),
+      //     );
+      // break;
 
     case RoutesNames.signupScreen:
       sendActivity(
@@ -91,7 +91,7 @@ dynamic sendRoute(BuildContext context, RoutesNames s,
   return widget;
 }
 
-enum RoutesNames { splash, allChatsHomeScreen, addFriend, loginScreen, signupScreen , chatScreen }
+enum RoutesNames { splash, allChatsHomeScreen, addFriend, loginScreen, signupScreen  }
 
 sendActivity(BuildContext context, Widget funcs,
     {bool isReplace = false, Function? onRefresh, bool clearStack = false}) {

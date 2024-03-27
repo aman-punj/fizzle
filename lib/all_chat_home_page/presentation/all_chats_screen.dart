@@ -8,6 +8,8 @@ import 'package:fizzle/user_chat/presentation/get_chat_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:pointycastle/export.dart'  as pointy_castle;
 
 import '../../../core/routes/send_route.dart';
 import '../../add_friend/presentation/add_friend_screen/user_bloc.dart';
@@ -102,7 +104,8 @@ class _ChatScreenState extends State<AllChatsScreen> {
                           ),
                           title: Text(filteredItems[index].name),
                           subtitle: const Text('Last message'),
-                          onTap: () {
+                          onTap: () async { const storage = FlutterSecureStorage();
+                          String? selfPrivateKey = await storage.read(key: 'privateKey');
                             Navigator.of(context).push(MaterialPageRoute(
                                 builder: (context) => MultiBlocProvider(
                                       providers: [
@@ -118,7 +121,9 @@ class _ChatScreenState extends State<AllChatsScreen> {
                                       ],
                                       child: ChatScreen(
                                           userName: filteredItems[index].name,
-                                          id: filteredItems[index].id),
+                                          id: filteredItems[index].id,
+                                      publicKey: filteredItems[index].publicKey,
+                                      myPrivateKey: selfPrivateKey as String,),
                                     )));
                           },
                         ),
@@ -164,6 +169,6 @@ class _ChatScreenState extends State<AllChatsScreen> {
   }
 
   void pushPage() {
-    sendRoute(context, RoutesNames.loginScreen);
+    sendRoute(context, RoutesNames.loginScreen , clearStack: true , isReplace: true);
   }
 }

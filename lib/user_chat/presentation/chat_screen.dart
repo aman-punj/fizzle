@@ -10,12 +10,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../core/presentation/components/common_widgets.dart';
+import '../../core/util/encryption.dart';
 
 class ChatScreen extends StatefulWidget {
   final String userName;
   final String id;
+  final String publicKey;
+  final String myPrivateKey;
 
-  const ChatScreen({super.key, required this.userName, required this.id});
+  const ChatScreen(
+      {super.key,
+      required this.userName,
+      required this.id,
+      required this.publicKey ,
+      required this.myPrivateKey ,
+      });
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -40,11 +49,13 @@ class _ChatScreenState extends State<ChatScreen> {
     initView();
   }
 
+
   void initView() async {
     chatBloc = BlocProvider.of<ChatBloc>(context);
     getChatBloc = BlocProvider.of<GetChatBloc>(context);
     deleteMsgBloc = BlocProvider.of<DeleteMsgBloc>(context);
-    getChatBloc!.add(widget.id);
+
+    getChatBloc!.add(FetchGetChatsEvent( id: widget.id));
   }
 
   @override
@@ -74,11 +85,13 @@ class _ChatScreenState extends State<ChatScreen> {
               setState(() {
                 isLoadingChat = true;
               });
-            } else if (state is GetChatsLoadedState) {
+            } else if (state is GetChatsSuccessState) {
               setState(() {
                 isLoadingChat = false;
                 _messages = state.chatData;
               });
+
+              // decryptMessages();
             }
           },
         ),
@@ -182,15 +195,25 @@ class _ChatScreenState extends State<ChatScreen> {
                                           : Colors.lightBlue[300],
                                       borderRadius: BorderRadius.circular(12.0),
                                     ),
-                                    child: Column(mainAxisAlignment: MainAxisAlignment.end,
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.end,
                                       children: [
-                                        Text(
-                                          _messages[index].text,
-                                          style: const TextStyle(
-                                              color: Colors.white),
+                                        FutureBuilder<String>(
+                                          future: _decryptMessage(_messages[index].text, widget.myPrivateKey),
+                                          builder: (context, snapshot) {
+                                            if (snapshot.connectionState == ConnectionState.waiting) {
+                                              return CircularProgressIndicator();
+                                            } else if (snapshot.hasError) {
+                                              return Text('Error decrypting message');
+                                            } else {
+                                              return Text(
+                                                snapshot.data ?? '',
+                                                style: const TextStyle(color: Colors.white),
+                                              );
+                                            }
+                                          },
                                         ),
                                         Text(
-
                                           _dateFormatter(_messages[index].time),
                                           textAlign: TextAlign.left,
                                           style: TextStyle(
@@ -269,19 +292,25 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
     );
   }
-late bool isDeleteAll;
-  void _sendMessage(String messageText) {
+  Future<String> _decryptMessage(
+      String encryptedMessage, String privateKeyPem) async {
+    final privateKey = RsaKeyHelper.parsePrivateKeyFromPem(privateKeyPem);
+    return RsaKeyHelper.decryptWithPrivateKey(encryptedMessage, privateKey);
+  }
+  late bool isDeleteAll;
+
+  Future<void> _sendMessage(String messageText) async {
     final newMessage = Message(
       userId: widget.id,
       text: messageText,
       time: DateTime.now(),
     );
-
-    chatBloc!.add(SendMessageEvent(message: newMessage));
+    chatBloc!.add(SendMessageEvent(
+        message: newMessage, receiverPublicKey: widget.publicKey));
     _messageController.clear();
   }
-  void _showMessageOptionsDialog(int index) {
 
+  void _showMessageOptionsDialog(int index) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -293,7 +322,7 @@ late bool isDeleteAll;
             children: [
               InkWell(
                 onTap: () {
-                  deleteForAll(index , false);
+                  deleteForAll(index, false);
                   Navigator.of(context).pop();
                 },
                 child: Padding(
@@ -301,32 +330,25 @@ late bool isDeleteAll;
                   child: regularText('Delete for me'),
                 ),
               ),
-              if (currentUser?.uid !=
-                  _messages[index].userId)
-              InkWell(
-                onTap: () {
-                  deleteForAll(index , true);
-                  Navigator.of(context).pop();
-                },
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 5.h),
-                  child: regularText('Delete for all'),
+              if (currentUser?.uid != _messages[index].userId)
+                InkWell(
+                  onTap: () {
+                    deleteForAll(index, true);
+                    Navigator.of(context).pop();
+                  },
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 5.h),
+                    child: regularText('Delete for all'),
+                  ),
                 ),
-              ),
             ],
           ),
         );
       },
     );
   }
-  void deleteForAll(msgNum , isDeleteAll) {
-    deleteMsgBloc?.add(DeleteMsgEvent(_messages[msgNum] , isDeleteAll));
-  }
 
+  void deleteForAll(msgNum, isDeleteAll) {
+    deleteMsgBloc?.add(DeleteMsgEvent(_messages[msgNum], isDeleteAll));
+  }
 }
-// Scroll to the bottom of the ListView
-// scrollController.animateTo(
-//   scrollController.position.maxScrollExtent,
-//   duration: const Duration(milliseconds: 300),
-//   curve: Curves.easeInOut,
-// );

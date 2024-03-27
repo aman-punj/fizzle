@@ -27,29 +27,27 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   ChatBloc(this.chatRepo) : super(ChatsLoadingState()) {
     on<SendMessageEvent>((event, emit) async {
       emit(ChatsLoadingState());
-
-      final result = await chatRepo.sendMessage(event.message);
+      final result = await chatRepo.sendMessage(event.message, event.receiverPublicKey/* , event.selfPublicKey*/);
       switch (result.type) {
         case NetworkResultType.success:
           emit(ChatsSuccessState());
           break;
         case NetworkResultType.error:
-
           emit(ChatsErrorState('Error during sending message'));
           break;
       }
     });
   }
-
-
 }
 
 abstract class ChatEvent extends Equatable {}
 
 class SendMessageEvent extends ChatEvent {
   final Message message;
+  final String receiverPublicKey;
+  // final String selfPublicKey;
 
-  SendMessageEvent({required this.message});
+  SendMessageEvent( {required this.message, required this.receiverPublicKey/*, required this.selfPublicKey*/});
 
   @override
   List<Object?> get props => [];

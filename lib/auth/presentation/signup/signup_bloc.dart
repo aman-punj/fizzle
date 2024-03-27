@@ -12,7 +12,7 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
       : super(SignUpInitialState()) {
     on<DoSignUpEvent>((event, emit) async {
       emit(SignUpLoadingState());
-      var result = await firebaseAuthService.signUp(event.email, event.password ,  event.userName);
+      var result = await firebaseAuthService.signUp(event.email, event.password ,  event.userName , event.publicKey);
       switch (result.type) {
         case NetworkResultType.success:
         // print('Success: ${(result as Success<String>).data}');
@@ -34,8 +34,9 @@ class DoSignUpEvent extends SignUpEvent {
   final String email;
   final String password;
   final String userName;
+  final String publicKey;
 
-  DoSignUpEvent({required this.email, required this.password  , required this.userName});
+  DoSignUpEvent({required this.email, required this.password  , required this.userName , required this.publicKey});
 
   @override
   List<Object?> get props => [email, password];

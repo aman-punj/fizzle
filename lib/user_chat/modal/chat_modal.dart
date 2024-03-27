@@ -1,6 +1,6 @@
 class Message {
   final String userId;
-  final String text;
+  final  String text;
   final DateTime time;
 
   Message({
@@ -24,4 +24,5 @@ class Message {
       'time': time.toIso8601String(),
     };
   }
+
 }

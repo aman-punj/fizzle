@@ -6,7 +6,7 @@ import '../util/result.dart';
 class FirebaseAuthService {
   FirebaseDatabase database = FirebaseDatabase.instance;
   Future<NetworkResult<String>> signUp(
-      String emailAddress, String password , String userName) async {
+      String emailAddress, String password , String userName , String publicKey) async {
     try {
       final UserCredential credential =
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
@@ -19,7 +19,8 @@ class FirebaseAuthService {
       await ref.set({
         "name": userName,
         "email": emailAddress,
-        "id": credential.user?.uid ?? ' '
+        "id": credential.user?.uid ?? ' ',
+        "publicKey": publicKey
       });
       return Success<String>('Logged in successfully');
     } on FirebaseAuthException catch (e) {
